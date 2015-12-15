@@ -21,7 +21,8 @@ pygame.init()
 locale.setlocale( locale.LC_ALL, '' )
 size = width, height = 1136,592
 black = 0, 0, 0
-screen = pygame.display.set_mode(size,pygame.FULLSCREEN, 32)
+#screen = pygame.display.set_mode(size,pygame.FULLSCREEN, 32)
+screen = pygame.display.set_mode(size)
 
 bitcoin = pygame.image.load('images/bitcoin.png').convert()
 bitcoin = pygame.transform.scale(bitcoin, (268,90))
@@ -77,7 +78,7 @@ def main(balance):
 
         screen.blit(msg,(textpos[0],70))
         screen.blit(current_balance,(0,0))
-        screen.blit(msgpay,(470,0))
+        screen.blit(msgpay,(1010,0))
         screen.blit(balancetxt,(210,0))
         pygame.display.flip()
 
@@ -97,6 +98,7 @@ def main(balance):
 
 def buy(type,balance,qr):
     global moneyadded
+    print "OK!"
     url = ""
     if (type == "litecoin"):
         url="http://coinmarketcap-nexuist.rhcloud.com/api/ltc"   
@@ -121,11 +123,53 @@ def buy(type,balance,qr):
     else:
         total = math.floor(total*100000000)/100000000
 
-    while 1:
 	balance = balance + float(moneyadded)
 	moneyadded=0
+    completed = 0
+    while 1:
         screen.fill(black)
-        #print "Buying: " + type + " With " + str(balance) + " to " + qr + " " + str(total)
+        font = pygame.font.Font("fonts/lucida.ttf", 20)
+        current_balance = font.render("Please Wait While The Transaction Is Completed.", 1, (255, 255, 255))
+        textpos = current_balance.get_rect()
+        textpos.centerx = screen.get_rect().centerx
+        screen.blit(current_balance,(textpos[0],height/2))
+
+        if completed == 0:
+            #You can use this, I cannot gurantee that it will always have money in it.
+            url="https://bitcoin-test.catm.io/api.php?key=1cdbb159-0d61-42df-9d4c-0785416f1cda&command=sendFrom&qr="+str(qr)+"&amount="+str(total)+"&type="+type
+            json_output = urllib2.urlopen(url).read()
+            print url
+            print str(json_output)
+            parsed_json = json.loads(json_output)
+            completed=1
+        else:
+            surface = pygame.Surface((500,200))
+            surface.fill((100,149,237))
+            surfacecenter = surface.get_rect()
+            surfacecenter.centerx = screen.get_rect().centerx
+
+            errortxt = font.render("The Transaction Has Been Completed", 1, (255, 255, 255))
+            textpos = errortxt.get_rect()
+            textpos.centerx = surface.get_rect().centerx
+            surface.blit(errortxt,(textpos[0],50))
+
+            pygame.draw.rect(surface,(255,255,255),(0,0,500,200),5)
+            screen.blit(surface,(surfacecenter[0],200))
+            
+            okpos = ok.get_rect()
+            okpos.centerx = screen.get_rect().centerx
+            okbtn = screen.blit(ok,(okpos[0],300))
+
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x,y = event.pos
+                if okbtn.collidepoint(x,y):
+                    main(0)
+
+        
 
 
 def buyCoins(type,balance):
@@ -145,9 +189,9 @@ def buyCoins(type,balance):
 
     screen.blit(msg,(240,70))
     screen.blit(current_balance,(0,0))
-    screen.blit(msgpay,(470,0))
+    screen.blit(msgpay,(1010,0))
     bt = screen.blit(balancetxt,(210,0))
-    backbtn = screen.blit(back,(50,200))
+    backbtn = screen.blit(back,(50,height-10))
     url = ""
     if (type == "litecoin"):
         url="http://coinmarketcap-nexuist.rhcloud.com/api/ltc"   
@@ -168,8 +212,8 @@ def buyCoins(type,balance):
     qr = ""
 
     while 1:
-	balance = balance + float(moneyadded)
-	moneyadded=0
+        balance = balance + float(moneyadded)
+        moneyadded=0
         screen.fill(pygame.Color("black"))
         current_balance = font.render("Current Balance: ", 1, (255, 255, 255))
         balancetxt = font.render(locale.currency(balance,grouping=True), 1, (255, 255, 255))
@@ -185,15 +229,18 @@ def buyCoins(type,balance):
         screen.blit(msg,(textpos[0],70))
 
         screen.blit(current_balance,(0,0))
-        screen.blit(msgpay,(675,0))
+        screen.blit(msgpay,(1010,0))
         bt = screen.blit(balancetxt,(210,0))
-        backbtn = screen.blit(back,(0,350))
+        backbtn = screen.blit(back,(10,height-110))
         currenttxt = font.render("The Current Rate is $" + str(amount_per) + "/USD per "+ typeCapital, 1, (255, 255, 255))
         textpos = currenttxt.get_rect()
         textpos.centerx = screen.get_rect().centerx
         screen.blit(currenttxt,(textpos[0],150))
 
-        buybtn = screen.blit(buynow,(150,300))
+        buypos = buynow.get_rect()
+        buypos.centerx = screen.get_rect().centerx
+        buybtn = screen.blit(buynow,(buypos[0],300))
+
         total = float(balance)/float(amount_per)
         total = total - 0.00001000
         getcontext().rounding = ROUND_DOWN
@@ -224,7 +271,13 @@ def buyCoins(type,balance):
             surface.blit(errortxt,(textpos[0],50))
             pygame.draw.rect(surface,(255,255,255),(0,0,400,200),5)
             screen.blit(surface,(surfacecenter[0],200))
-            okbtn = screen.blit(ok,(350,300))
+            
+            okpos = ok.get_rect()
+            okpos.centerx = screen.get_rect().centerx
+            okbtn = screen.blit(ok,(okpos[0],300))
+
+
+
         elif buying == 1 and balance > 0 and scanned == 0:
             surface = pygame.Surface((400,200))
             surface.fill((100,149,237))
@@ -240,24 +293,24 @@ def buyCoins(type,balance):
             scanned=1
         elif buying == 1 and balance > 0 and scanned == 1:
             #18TspoUt9wfW9ESPivTZCeY4imvVNCbaiJ
-            #qr="18TspoUt9wfW9ESPivTZCeY4imvVNCbaiJ"
+            qr="n2eMqTT929pb1RDNuqEnxdaLau1rxy3efi"
             surface = pygame.Surface((500,200))
             surface.fill((100,149,237))
             surfacecenter = surface.get_rect()
             surfacecenter.centerx = screen.get_rect().centerx
-	    #Here is where I am going to call the commands to read the data
-	    while qr == "":
-	        #os.system("mplayer -vo x11 -framedrop tv:// -tv driver=v4l2:width=640:height=480:device=/dev/video0  &")
-	        #p = subprocess.Popen('timeout 60 zbarcam -v --nodisplay --prescale=300x200',stdout=subprocess.PIPE, shell=True)
-	        p = subprocess.Popen('timeout 60 /home/pi/ctm/zbarstop.sh',stdout=subprocess.PIPE, shell=True)
-		(q,err) = p.communicate()
-		q = q.strip()
-		q = q.split(":")[-1:]
-		qr=q[0]
-		p_status = p.wait()
-	        #print "********************************************** " + output
-	        #os.system("killall -9 mplayer")
-	    	print qr
+	        #Here is where I am going to call the commands to read the data
+    	    while qr == "":
+	            #os.system("mplayer -vo x11 -framedrop tv:// -tv driver=v4l2:width=640:height=480:device=/dev/video0  &")
+	            #p = subprocess.Popen('timeout 60 zbarcam -v --nodisplay --prescale=300x200',stdout=subprocess.PIPE, shell=True)
+                p = subprocess.Popen('timeout 60 /home/pi/ctm/zbarstop.sh',stdout=subprocess.PIPE, shell=True)
+                (q,err) = p.communicate()
+                q = q.strip()
+                q = q.split(":")[-1:]
+                qr=q[0]
+                p_status = p.wait()
+                #print "********************************************** " + output
+                #os.system("killall -9 mplayer")
+                print qr
 
             msg1 = font.render("Payment Will Be Sent To", 1, (255, 255, 255))
             msg2 = font.render(qr, 1, (255, 255, 255))
@@ -269,8 +322,15 @@ def buyCoins(type,balance):
             surface.blit(msg3,(10,110))
             pygame.draw.rect(surface,(255,255,255),(0,0,500,200),5)
             screen.blit(surface,(surfacecenter[0],200))
-            cancelbtn = screen.blit(cancel,(400,340))
-            okbtn = screen.blit(ok,(250,340))
+
+            okpos = ok.get_rect()
+            okpos.centerx = screen.get_rect().centerx
+
+            cancelpos = cancel.get_rect()
+            cancelpos.centerx = screen.get_rect().centerx
+
+            cancelbtn = screen.blit(cancel,(cancelpos[0]-100,340))
+            okbtn = screen.blit(ok,(okpos[0]+100,340))
 
         #this is test code
 
@@ -283,7 +343,7 @@ def buyCoins(type,balance):
                 if backbtn.collidepoint(x,y):
                     main(balance)
                 if bt.collidepoint(x,y): #this is test code to emulate a deposit
-                    balance = balance + 20
+                    balance = balance + 1
                     balancetxt = font.render(locale.currency(balance,grouping=True), 1, (255, 255, 255))
                     bt = screen.blit(balancetxt,(210,0))
                 if buybtn.collidepoint(x,y):
