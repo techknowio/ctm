@@ -4,6 +4,10 @@ from decimal import *
 os.system("v4l2-ctl --overlay=off")
 moneyadded=0
 
+payurl="bitcoin-test.catm.io"
+paykey="1cdbb159-0d61-42df-9d4c-0785416f1cda"
+
+
 def serialReader ():
     global moneyadded
     ser = serial.Serial('/dev/ttyACM0', 9600)
@@ -140,8 +144,7 @@ def buy(type,balance,qr):
 
         if completed == 0:
             #You can use this, I cannot gurantee that it will always have money in it.
-            url="https://bitcoin-test.catm.io/api.php?key=1cdbb159-0d61-42df-9d4c-0785416f1cda&command=sendFrom&qr="+str(qr)+"&amount="+str(total)+"&type="+type
-            print url
+            url="https://"+payurl+"/api.php?key="+paykey+"&command=sendFrom&qr="+str(qr)+"&amount="+str(total)+"&type="+type
             gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
             json_output = urllib2.urlopen(url,context=gcontext).read()
             print url
