@@ -1,8 +1,9 @@
-#!/usr/bin/python2.7
+#!/usr/local/bin/python2.7
 import sys, pygame, json, urllib2, math, locale,serial, time, threading, os, subprocess
 from decimal import *
 os.system("v4l2-ctl --overlay=off")
 moneyadded=0
+
 def serialReader ():
     global moneyadded
     ser = serial.Serial('/dev/ttyACM0', 9600)
@@ -13,9 +14,9 @@ def serialReader ():
     ser.close() 
 
 
-thread1 = threading.Thread(target=serialReader)
-thread1.daemon = True
-thread1.start()
+#thread1 = threading.Thread(target=serialReader)
+#thread1.daemon = True
+#thread1.start()
 
 pygame.init()
 locale.setlocale( locale.LC_ALL, '' )
@@ -101,16 +102,19 @@ def buy(type,balance,qr):
     print "OK!"
     url = ""
     if (type == "litecoin"):
-        url="http://coinmarketcap-nexuist.rhcloud.com/api/ltc"   
+        #url="http://coinmarketcap-nexuist.rhcloud.com/api/ltc"   
+        url="http://coinmarketcap.northpole.ro/api/ltc.json"   
     if (type == "bitcoin"):
-        url="http://coinmarketcap-nexuist.rhcloud.com/api/btc"   
+        url="http://coinmarketcap.northpole.ro/api/btc.json"   
     if (type == "dogecoin"):
-        url="http://coinmarketcap-nexuist.rhcloud.com/api/doge"   
+        #url="http://coinmarketcap-nexuist.rhcloud.com/api/doge"   
+        url="http://coinmarketcap.northpole.ro/api/doge.json"
     
     json_output = urllib2.urlopen(url).read()
 
     parsed_json = json.loads(json_output)
-    usd = parsed_json['price']['usd']
+    #usd = parsed_json['price']['usd']
+    usd = parsed_json['price']
     orig_usd = usd
     usd = Decimal(usd)
     usd = (float(usd) * float(.01))        
@@ -194,16 +198,19 @@ def buyCoins(type,balance):
     backbtn = screen.blit(back,(50,height-10))
     url = ""
     if (type == "litecoin"):
-        url="http://coinmarketcap-nexuist.rhcloud.com/api/ltc"   
+        #url="http://coinmarketcap-nexuist.rhcloud.com/api/ltc"
+        url = "http://coinmarketcap.northpole.ro/api/ltc.json"
     if (type == "bitcoin"):
-        url="http://coinmarketcap-nexuist.rhcloud.com/api/btc"   
+        #url="http://coinmarketcap-nexuist.rhcloud.com/api/btc"   
+        url="http://coinmarketcap.northpole.ro/api/btc.json"
     if (type == "dogecoin"):
-        url="http://coinmarketcap-nexuist.rhcloud.com/api/doge"   
-    
+        #url="http://coinmarketcap-nexuist.rhcloud.com/api/doge"   
+        url="http://coinmarketcap.northpole.ro/api/doge.json"
     json_output = urllib2.urlopen(url).read()
 
     parsed_json = json.loads(json_output)
-    usd = parsed_json['price']['usd']
+    #usd = parsed_json['price']['usd']
+    usd = parsed_json['price']
     orig_usd = usd
     usd = Decimal(usd)
     usd = (float(usd) * float(.01))        
