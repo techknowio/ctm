@@ -1,5 +1,5 @@
 #!/usr/local/bin/python2.7
-import sys, pygame, json, urllib2, math, locale,serial, time, threading, os, subprocess
+import sys, pygame, json, urllib2, math, locale,serial, time, threading, os, subprocess,ssl
 from decimal import *
 os.system("v4l2-ctl --overlay=off")
 moneyadded=0
@@ -141,7 +141,9 @@ def buy(type,balance,qr):
         if completed == 0:
             #You can use this, I cannot gurantee that it will always have money in it.
             url="https://bitcoin-test.catm.io/api.php?key=1cdbb159-0d61-42df-9d4c-0785416f1cda&command=sendFrom&qr="+str(qr)+"&amount="+str(total)+"&type="+type
-            json_output = urllib2.urlopen(url).read()
+            print url
+            gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            json_output = urllib2.urlopen(url,context=gcontext).read()
             print url
             print str(json_output)
             parsed_json = json.loads(json_output)
